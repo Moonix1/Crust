@@ -15,7 +15,10 @@ pub enum Type {
 pub enum Expr {
 	Number { val: NumType },
 	
-	VarRef { var_type: Type },
+	VarRef {
+		name: String,
+		var_type: Type,
+	},
 	Call {
 		name: String,
 		param: Option<Vec<crate::Expr>>,
@@ -57,6 +60,17 @@ impl Parser {
 		}
 
 		token
+	}
+
+	fn parse_type_wt(&mut self, tok: Token) -> Option<Type> {
+		match tok.value.as_str() {
+			"int" => return Some(Type::INT),
+			"void" => return Some(Type::VOID),
+
+			_ => {
+				return None;
+			}
+		}
 	}
 
 	fn parse_type(&mut self) -> Option<Type> {
@@ -118,6 +132,39 @@ impl Parser {
 		return Some(exprs);
 	}
 
+	fn parse_func_param(&mut self) -> Option<Vec<Expr>> {
+		if self.expect_tok(TokenType::LeftParen).is_none() { return None; }
+
+		let mut exprs = Vec::<Expr>::new();
+
+		let mut tok = self.lexer.next_token();
+		while tok.clone().is_some() && tok.clone().unwrap().tok_type != TokenType::RightParen {
+			match tok.clone().unwrap().tok_type {
+				TokenType::Type => {
+					exprs.push(Expr::VarRef {
+						name: self.expect_tok(TokenType::Identifier).unwrap().value,
+						var_type: self.parse_type_wt(tok.unwrap()).unwrap()
+					});
+				}
+
+				_ => {
+					println!("error: invalid token type, info: {:?}", tok.clone().unwrap().tok_type);
+				}
+			}
+
+			tok = self.lexer.next_token();
+
+			if tok.clone().unwrap().tok_type == TokenType::Comma {
+				tok = self.lexer.next_token();
+				continue;
+			} else {
+				break;
+			}
+		}
+
+		return Some(exprs);
+	}
+
 	pub fn parse_func(&mut self) -> Option<FunctionExpr> {
 		let return_type = self.parse_type();
 		if return_type.is_none() { return None }
@@ -125,15 +172,13 @@ impl Parser {
 		let name = self.expect_tok(TokenType::Identifier);
 		if name.is_none() { return None }
 
-		
-		if self.expect_tok(TokenType::LeftParen).is_none() { return None; }
-		if self.expect_tok(TokenType::RightParen).is_none() { return None; }
+		let param = self.parse_func_param();
 
 		let body = self.parse_block(return_type.clone());
 
 		return Some(FunctionExpr {
 			name: name.unwrap().value,
-			param: None,
+			param: param,
 			ret_type: return_type.unwrap(),
 			body: body,
 		});

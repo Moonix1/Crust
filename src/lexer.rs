@@ -114,6 +114,11 @@ impl Lexer {
 					return Some(self.advance_with(lexed_string));
 				}
 
+				',' => return Some(self.advance_with(Token {
+					tok_type: TokenType::Comma,
+					value: self.c.to_string(),
+				})),
+
 				';' => return Some(self.advance_with(Token {
 					tok_type: TokenType::SemiColon,
 					value: self.c.to_string(),

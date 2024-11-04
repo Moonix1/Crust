@@ -16,6 +16,7 @@ pub enum TokenType {
 	RightParen,
 	LeftCurly,
 	RightCurly,
+	Comma,
 	SemiColon,
 }
 
