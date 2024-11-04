@@ -2,8 +2,10 @@ use std::{env::args, fs::File, io::Read};
 
 mod token;
 mod lexer;
+mod parser;
 
 use lexer::*;
+use parser::*;
 
 fn get_file_contents(path: &str) -> String {
 	let mut file = File::open(path).unwrap();
@@ -20,9 +22,8 @@ fn main() {
 	let contents = get_file_contents(&args[1]);
 	let mut lexer = Lexer::init(contents);
 
-	let mut token = lexer.next_token();
-	while !token.is_none() {
-		println!("{:?}", token.unwrap());
-		token = lexer.next_token();
-	}
+	let mut parser = Parser::init(lexer);
+	let func = parser.parse_func();
+
+	println!("{:?}", func);
 }

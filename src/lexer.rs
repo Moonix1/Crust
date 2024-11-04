@@ -42,6 +42,8 @@ impl Lexer {
 		match value.as_str() {
 			"return" => return Token { tok_type: TokenType::Return, value },
 
+			"int" => return Token { tok_type: TokenType::Type, value },
+
 			_ => return Token { tok_type: TokenType::Identifier, value }
 		}
 	}
@@ -99,11 +101,11 @@ impl Lexer {
 				})),
 
 				'{' => return Some(self.advance_with(Token {
-					tok_type: TokenType::RightCurly,
+					tok_type: TokenType::LeftCurly,
 					value: self.c.to_string(),
 				})),
 				'}' => return Some(self.advance_with(Token {
-					tok_type: TokenType::LeftCurly,
+					tok_type: TokenType::RightCurly,
 					value: self.c.to_string(),
 				})),
 
